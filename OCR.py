@@ -510,8 +510,29 @@ class OCRSnipperApp(QApplication):
     # ── Global hotkey (Windows) ───────────────────────────────────────────────
 
     def _register_hotkey(self):
-        import keyboard
-        keyboard.add_hotkey('ctrl+shift+s', self.start_snip)
+        try:
+            import ctypes
+            from ctypes import wintypes
+            MOD_CTRL  = 0x0002
+            MOD_SHIFT = 0x0004
+            VK_S      = 0x53
+            if ctypes.windll.user32.RegisterHotKey(None, HOTKEY_ID, MOD_CTRL | MOD_SHIFT, VK_S):
+                self._hotkey_timer = QTimer(interval=100)
+                self._hotkey_timer.timeout.connect(self._poll_hotkey)
+                self._hotkey_timer.start()
+        except Exception:
+            pass   # Non-Windows; hotkey unavailable (use tray double-click instead)
+ 
+    def _poll_hotkey(self):
+        try:
+            import ctypes
+            from ctypes import wintypes
+            msg = wintypes.MSG()
+            if ctypes.windll.user32.PeekMessageW(ctypes.byref(msg), None, 0x0312, 0x0312, 1):
+                if msg.message == 0x0312 and msg.wParam == HOTKEY_ID:
+                    self.start_snip()
+        except Exception:
+            pass
 
     # ── Snip workflow ─────────────────────────────────────────────────────────
 
