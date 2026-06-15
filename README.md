@@ -9,6 +9,11 @@ A lightweight screen-region OCR tool that lives in your system tray. Draw a box 
 
 ---
 
+## Demo
+<img width="800" height="450" alt="demo" src="https://github.com/user-attachments/assets/97fd9a62-e49c-480d-9fbe-18518b9fcc92" />
+
+---
+
 ## Features
 
 - **System tray app** — runs quietly in the background, always one shortcut away
@@ -36,7 +41,7 @@ A lightweight screen-region OCR tool that lives in your system tray. Draw a box 
 ### 2. Install Python dependencies
 
 ```bash
-pip install PyQt5 mss Pillow pytesseract pyperclip
+pip install PyQt5 mss Pillow pytesseract pyperclip keyboard
 ```
 
 ### 3. Run
@@ -92,8 +97,11 @@ Hotkey / tray click
 
 ```
 OCR-text-snipper/
-├── OCR.py        # Main script — everything in one file
-└── README.md
+├── OCR.py
+├── README.md
+├── requirements.txt
+├── .gitignore
+└── run.bat
 ```
 
 ---
@@ -115,3 +123,4 @@ OCR-text-snipper/
 - mss ≥ 9.0
 - pyperclip ≥ 1.8
 - Tesseract OCR binary (any recent version)
+- keyboard ≥ 0.13
