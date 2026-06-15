@@ -1,0 +1,6 @@
+PyQt5
+mss
+Pillow
+pytesseract
+pyperclip
+keyboard
