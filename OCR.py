@@ -430,6 +430,9 @@ class OCRSnipperApp(QApplication):
         self._build_tray()
         self._register_hotkey()
 
+        if not tess_path:
+            QTimer.singleShot(300, self._missing_tesseract_warning)
+
         # Startup toast
         QTimer.singleShot(600, self._startup_toast)
 
@@ -511,28 +514,19 @@ class OCRSnipperApp(QApplication):
 
     def _register_hotkey(self):
         try:
-            import ctypes
-            from ctypes import wintypes
-            MOD_CTRL  = 0x0002
-            MOD_SHIFT = 0x0004
-            VK_S      = 0x53
-            if ctypes.windll.user32.RegisterHotKey(None, HOTKEY_ID, MOD_CTRL | MOD_SHIFT, VK_S):
-                self._hotkey_timer = QTimer(interval=100)
-                self._hotkey_timer.timeout.connect(self._poll_hotkey)
-                self._hotkey_timer.start()
+            import keyboard
+
+            class HotkeyBridge(QtCore.QObject):
+                triggered = QtCore.pyqtSignal()
+
+            self._hotkey_bridge = HotkeyBridge()
+            self._hotkey_bridge.triggered.connect(self.start_snip)
+            keyboard.add_hotkey(
+                "ctrl+shift+s",
+                lambda: self._hotkey_bridge.triggered.emit(),
+            )
         except Exception:
-            pass   # Non-Windows; hotkey unavailable (use tray double-click instead)
- 
-    def _poll_hotkey(self):
-        try:
-            import ctypes
-            from ctypes import wintypes
-            msg = wintypes.MSG()
-            if ctypes.windll.user32.PeekMessageW(ctypes.byref(msg), None, 0x0312, 0x0312, 1):
-                if msg.message == 0x0312 and msg.wParam == HOTKEY_ID:
-                    self.start_snip()
-        except Exception:
-            pass
+            pass   # Hotkey unavailable; use tray double-click instead.
 
     # ── Snip workflow ─────────────────────────────────────────────────────────
 
@@ -587,6 +581,14 @@ class OCRSnipperApp(QApplication):
             "Running in tray — press Ctrl+Shift+S or double-click to snip.",
             QSystemTrayIcon.Information,
             3_500,
+        )
+
+    def _missing_tesseract_warning(self):
+        self._tray.showMessage(
+            "Tesseract not found",
+            "Install Tesseract OCR before snipping text.",
+            QSystemTrayIcon.Warning,
+            6_000,
         )
 
 
